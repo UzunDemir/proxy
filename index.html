@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gianluca Dimeo & Daniel Santoro - Wings</title>
+<title>Музыкальный Плеер</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
@@ -11,118 +11,393 @@ body {
     background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
     color: white;
     min-height: 100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
 }
 .player-container {
     background: rgba(0,0,0,0.7);
-    border-radius:20px;
-    padding:30px;
-    width:100%;
-    max-width:400px;
-    box-shadow:0 15px 30px rgba(0,0,0,0.5);
+    border-radius: 20px;
+    padding: 30px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.5);
     backdrop-filter: blur(10px);
 }
 .album-art {
-    width:100%;
-    border-radius:15px;
-    margin-bottom:20px;
-    box-shadow:0 10px 20px rgba(0,0,0,0.3);
+    width: 100%;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     background: linear-gradient(45deg, #2c3e50, #4ca1af);
-    aspect-ratio:1/1;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    overflow:hidden;
+    aspect-ratio: 1/1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
 }
-.album-art .placeholder { font-size:50px; color:rgba(255,255,255,0.3); }
-.song-info { text-align:center; margin-bottom:25px; }
-.song-title { font-size:22px; font-weight:600; margin-bottom:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.song-artist { font-size:16px; color:#ddd; margin-bottom:15px; }
-.progress-container { margin-bottom:20px; }
-.progress-bar { width:100%; height:6px; background:rgba(255,255,255,0.2); border-radius:10px; overflow:hidden; margin-bottom:5px; cursor:pointer; }
-.progress { height:100%; background:linear-gradient(to right,#ff8a00,#da1b60); border-radius:10px; width:0%; transition:width 0.1s ease; }
-.time { display:flex; justify-content:space-between; font-size:12px; color:#ccc; }
-.controls { display:flex; justify-content:center; align-items:center; gap:25px; margin-bottom:20px; }
-.btn { background:none; border:none; color:white; cursor:pointer; font-size:16px; transition: all 0.2s; }
-.btn-play { width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg,#ff8a00,#da1b60); display:flex; justify-content:center; align-items:center; font-size:24px; box-shadow:0 5px 15px rgba(218,27,96,0.4); }
-.btn-play:hover { transform:scale(1.1); }
-.btn:active { transform:scale(0.95); }
-.volume-container { display:flex; align-items:center; gap:10px; margin-top:10px; }
-.volume-slider { flex-grow:1; -webkit-appearance:none; height:4px; background:rgba(255,255,255,0.2); border-radius:10px; outline:none; }
-.volume-slider::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:white; cursor:pointer; }
-.audio-info { text-align:center; font-size:12px; color:#999; margin-top:20px; }
+.album-art .placeholder { 
+    font-size: 50px; 
+    color: rgba(255,255,255,0.3); 
+}
+.album-art .vinyl {
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    background: radial-gradient(circle, #121212 30%, #333 30%, #333 32%, #121212 32%);
+    border: 3px solid #555;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.album-art .vinyl::after {
+    content: '';
+    width: 15%;
+    height: 15%;
+    border-radius: 50%;
+    background: #ff8a00;
+}
+.album-art.playing .vinyl {
+    animation: rotate 10s linear infinite;
+}
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.song-info { 
+    text-align: center; 
+    margin-bottom: 25px; 
+}
+.song-title { 
+    font-size: 22px; 
+    font-weight: 600; 
+    margin-bottom: 5px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
+.song-artist { 
+    font-size: 16px; 
+    color: #ddd; 
+    margin-bottom: 15px; 
+}
+.progress-container { 
+    margin-bottom: 20px; 
+}
+.progress-bar { 
+    width: 100%; 
+    height: 6px; 
+    background: rgba(255,255,255,0.2); 
+    border-radius: 10px; 
+    overflow: hidden; 
+    margin-bottom: 5px; 
+    cursor: pointer; 
+    position: relative;
+}
+.progress { 
+    height: 100%; 
+    background: linear-gradient(to right, #ff8a00, #da1b60); 
+    border-radius: 10px; 
+    width: 0%; 
+    transition: width 0.1s ease; 
+}
+.time { 
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 12px; 
+    color: #ccc; 
+}
+.controls { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 25px; 
+    margin-bottom: 20px; 
+}
+.btn { 
+    background: none; 
+    border: none; 
+    color: white; 
+    cursor: pointer; 
+    font-size: 16px; 
+    transition: all 0.2s; 
+    padding: 8px;
+    border-radius: 50%;
+}
+.btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+.btn-play { 
+    width: 60px; 
+    height: 60px; 
+    border-radius: 50%; 
+    background: linear-gradient(135deg, #ff8a00, #da1b60); 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    font-size: 24px; 
+    box-shadow: 0 5px 15px rgba(218,27,96,0.4); 
+}
+.btn-play:hover { 
+    transform: scale(1.1); 
+}
+.btn:active { 
+    transform: scale(0.95); 
+}
+.volume-container { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    margin-top: 10px; 
+}
+.volume-slider { 
+    flex-grow: 1; 
+    -webkit-appearance: none; 
+    height: 4px; 
+    background: rgba(255,255,255,0.2); 
+    border-radius: 10px; 
+    outline: none; 
+}
+.volume-slider::-webkit-slider-thumb { 
+    -webkit-appearance: none; 
+    width: 14px; 
+    height: 14px; 
+    border-radius: 50%; 
+    background: white; 
+    cursor: pointer; 
+}
+.audio-info { 
+    text-align: center; 
+    font-size: 12px; 
+    color: #999; 
+    margin-top: 20px; 
+}
+.playlist-toggle {
+    display: block;
+    margin: 15px auto 0;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+.playlist-toggle:hover {
+    background: rgba(255,255,255,0.2);
+}
+.playlist {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease;
+    margin-top: 15px;
+}
+.playlist.show {
+    max-height: 300px;
+    overflow-y: auto;
+}
+.playlist-item {
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.playlist-item:hover {
+    background: rgba(255,255,255,0.1);
+}
+.playlist-item.active {
+    background: rgba(218,27,96,0.3);
+    border-left: 3px solid #da1b60;
+}
 </style>
 </head>
 <body>
 <div class="player-container">
-    <div class="album-art"><div class="placeholder">♪</div></div>
+    <div class="album-art" id="album-art">
+        <div class="vinyl">
+            <div class="placeholder">♪</div>
+        </div>
+    </div>
     <div class="song-info">
-        <h2 class="song-title">Wings</h2>
-        <p class="song-artist">Gianluca Dimeo & Daniel Santoro</p>
+        <h2 class="song-title" id="song-title">Wings</h2>
+        <p class="song-artist" id="song-artist">Gianluca Dimeo & Daniel Santoro</p>
     </div>
     <div class="progress-container">
-        <div class="progress-bar" id="progress-bar"><div class="progress" id="progress"></div></div>
-        <div class="time"><span id="current-time">0:00</span><span id="duration">0:00</span></div>
+        <div class="progress-bar" id="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div class="time">
+            <span id="current-time">0:00</span>
+            <span id="duration">0:00</span>
+        </div>
     </div>
     <div class="controls">
-        <button class="btn" id="prev">⏮</button>
-        <button class="btn btn-play" id="play">▶</button>
-        <button class="btn" id="next">⏭</button>
+        <button class="btn" id="prev" title="Предыдущий трек">⏮</button>
+        <button class="btn btn-play" id="play" title="Воспроизвести/Пауза">▶</button>
+        <button class="btn" id="next" title="Следующий трек">⏭</button>
     </div>
     <div class="volume-container">
         <span class="btn">🔈</span>
         <input type="range" class="volume-slider" id="volume" min="0" max="1" step="0.01" value="0.7">
         <span class="btn">🔊</span>
     </div>
-    <div class="audio-info"><p>Аудиофайл загружается с прокси:</p></div>
-    <audio id="audio-player" controls
-       src="https://unewfm.vercel.app/api/proxy?url=http%3A%2F%2F185.43.6.38%2Fhc%2Fpreview%2Ftemp_067TG%2F2025.09%2FGianluca%20Dimeo%20%26%20Daniel%20Santoro%20-%20Wings.mp3">
-    </audio>
+    
+    <button class="playlist-toggle" id="playlist-toggle">▼ Плейлист</button>
+    
+    <div class="playlist" id="playlist">
+        <div class="playlist-item active" data-src="https://unewfm.vercel.app/api/proxy?url=http%3A%2F%2F185.43.6.38%2Fhc%2Fpreview%2Ftemp_067TG%2F2025.09%2FGianluca%20Dimeo%20%26%20Daniel%20Santoro%20-%20Wings.mp3" data-title="Wings" data-artist="Gianluca Dimeo & Daniel Santoro">
+            Wings - Gianluca Dimeo & Daniel Santoro
+        </div>
+        <div class="playlist-item" data-src="https://unewfm.vercel.app/api/proxy?url=http%3A%2F%2Fexample.com%2Ftrack2.mp3" data-title="Пример трека 2" data-artist="Исполнитель 2">
+            Пример трека 2 - Исполнитель 2
+        </div>
+        <div class="playlist-item" data-src="https://unewfm.vercel.app/api/proxy?url=http%3A%2F%2Fexample.com%2Ftrack3.mp3" data-title="Пример трека 3" data-artist="Исполнитель 3">
+            Пример трека 3 - Исполнитель 3
+        </div>
+    </div>
+    
+    <div class="audio-info">
+        <p>Аудиофайл загружается с прокси</p>
+    </div>
+    
+    <audio id="audio-player"></audio>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     const audio = document.getElementById('audio-player');
     const playBtn = document.getElementById('play');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
     const progressBar = document.getElementById('progress-bar');
     const progress = document.getElementById('progress');
     const currentTimeEl = document.getElementById('current-time');
     const durationEl = document.getElementById('duration');
     const volumeSlider = document.getElementById('volume');
-
+    const albumArt = document.getElementById('album-art');
+    const songTitle = document.getElementById('song-title');
+    const songArtist = document.getElementById('song-artist');
+    const playlistToggle = document.getElementById('playlist-toggle');
+    const playlist = document.getElementById('playlist');
+    const playlistItems = document.querySelectorAll('.playlist-item');
+    
+    let currentTrackIndex = 0;
+    
+    // Форматирование времени
+    function formatTime(time) {
+        const minutes = Math.floor(time / 60);
+        const seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+    
+    // Загрузка и воспроизведение трека
+    function loadTrack(index) {
+        const track = playlistItems[index];
+        audio.src = track.getAttribute('data-src');
+        songTitle.textContent = track.getAttribute('data-title');
+        songArtist.textContent = track.getAttribute('data-artist');
+        
+        // Обновление активного элемента плейлиста
+        playlistItems.forEach(item => item.classList.remove('active'));
+        track.classList.add('active');
+        currentTrackIndex = index;
+        
+        audio.load();
+        audio.play().then(() => {
+            playBtn.innerHTML = '⏸';
+            albumArt.classList.add('playing');
+        }).catch(e => {
+            console.error("Ошибка воспроизведения:", e);
+        });
+    }
+    
+    // Воспроизведение/пауза
     playBtn.addEventListener('click', function(){
         if(audio.paused){
-            audio.play(); playBtn.innerHTML='⏸';
-        } else{
-            audio.pause(); playBtn.innerHTML='▶';
+            audio.play().then(() => {
+                playBtn.innerHTML = '⏸';
+                albumArt.classList.add('playing');
+            }).catch(e => {
+                console.error("Ошибка воспроизведения:", e);
+            });
+        } else {
+            audio.pause();
+            playBtn.innerHTML = '▶';
+            albumArt.classList.remove('playing');
         }
     });
-
+    
+    // Обновление прогресса
     audio.addEventListener('timeupdate', function(){
         const currentTime = audio.currentTime;
-        const duration = audio.duration;
-        const progressPercent = (currentTime/duration)*100;
+        const duration = audio.duration || 0;
+        const progressPercent = duration ? (currentTime / duration) * 100 : 0;
         progress.style.width = `${progressPercent}%`;
-        const formatTime = time=>{ const m=Math.floor(time/60); const s=Math.floor(time%60); return `${m}:${s<10?'0':''}${s}`; }
+        
         currentTimeEl.textContent = formatTime(currentTime);
-        if(duration) durationEl.textContent = formatTime(duration);
+        if (duration) {
+            durationEl.textContent = formatTime(duration);
+        }
     });
-
+    
+    // Перемотка по клику на прогресс-бар
     progressBar.addEventListener('click', function(e){
-        const width = this.clientWidth;
-        const clickX = e.offsetX;
-        audio.currentTime = (clickX/width)*audio.duration;
+        if (audio.duration) {
+            const width = this.clientWidth;
+            const clickX = e.offsetX;
+            audio.currentTime = (clickX / width) * audio.duration;
+        }
     });
-
-    volumeSlider.addEventListener('input', function(){ audio.volume=this.value; });
-
-    audio.addEventListener('ended', function(){ playBtn.innerHTML='▶'; audio.currentTime=0; });
-
-    document.getElementById('prev').addEventListener('click', ()=>alert('Это демо-версия плеера. Здесь был бы предыдущий трек.'));
-    document.getElementById('next').addEventListener('click', ()=>alert('Это демо-версия плеера. Здесь был бы следующий трек.'));
+    
+    // Регулировка громкости
+    volumeSlider.addEventListener('input', function(){ 
+        audio.volume = this.value; 
+    });
+    
+    // Переключение треков
+    audio.addEventListener('ended', function(){ 
+        nextTrack();
+    });
+    
+    prevBtn.addEventListener('click', function(){ 
+        prevTrack();
+    });
+    
+    nextBtn.addEventListener('click', function(){ 
+        nextTrack();
+    });
+    
+    function nextTrack() {
+        let nextIndex = (currentTrackIndex + 1) % playlistItems.length;
+        loadTrack(nextIndex);
+    }
+    
+    function prevTrack() {
+        let prevIndex = (currentTrackIndex - 1 + playlistItems.length) % playlistItems.length;
+        loadTrack(prevIndex);
+    }
+    
+    // Переключение треков из плейлиста
+    playlistItems.forEach((item, index) => {
+        item.addEventListener('click', function() {
+            loadTrack(index);
+        });
+    });
+    
+    // Открытие/закрытие плейлиста
+    playlistToggle.addEventListener('click', function() {
+        playlist.classList.toggle('show');
+        this.textContent = playlist.classList.contains('show') ? '▲ Скрыть плейлист' : '▼ Плейлист';
+    });
+    
+    // Загрузка первого трека
+    loadTrack(0);
 });
 </script>
 </body>
