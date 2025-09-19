@@ -28,7 +28,7 @@
         }
         h1 {
             margin-top: 0;
-            color: #1DB954; /* Зеленый цвет как в Spotify */
+            color: #1DB954;
         }
         audio {
             width: 100%;
@@ -44,35 +44,85 @@
             width: 100%;
             margin: 15px 0;
         }
+        .start-button {
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: background-color 0.3s;
+        }
+        .start-button:hover {
+            background-color: #1ed760;
+        }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="player-container">
-        <h1>Сейчас в эфире</h1>
+        <h1>Интернет-радио</h1>
         <p>Gianluca Dimeo & Daniel Santoro - Wings</p>
         
-        <audio id="audioPlayer" controls autoplay>
-            <!-- Подставляем вашу ссылку в источник -->
-            <source src="http://185.43.6.38/hc/preview/temp_067TG/2025.09/Gianluca%20Dimeo%20%26%20Daniel%20Santoro%20-%20Wings.mp3" type="audio/mpeg">
-            Ваш браузер не поддерживает элемент audio.
-        </audio>
+        <button id="startButton" class="start-button">▶️ Запустить радио</button>
+        
+        <div id="playerControls" class="hidden">
+            <audio id="audioPlayer" controls>
+                <source src="http://185.43.6.38/hc/preview/temp_067TG/2025.09/Gianluca%20Dimeo%20%26%20Daniel%20Santoro%20-%20Wings.mp3" type="audio/mpeg">
+                Ваш браузер не поддерживает элемент audio.
+            </audio>
 
-        <div class="volume-control">
-            <label for="volumeSlider">Громкость:</label>
-            <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+            <div class="volume-control">
+                <label for="volumeSlider">Громкость:</label>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+            </div>
         </div>
 
-        <div class="status" id="status">Загрузка...</div>
+        <div class="status" id="status">Нажмите кнопку выше чтобы начать прослушивание</div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const startButton = document.getElementById('startButton');
+            const playerControls = document.getElementById('playerControls');
             const audioPlayer = document.getElementById('audioPlayer');
             const volumeSlider = document.getElementById('volumeSlider');
             const status = document.getElementById('status');
             
-            // Устанавливаем максимальную громкость по умолчанию
-            audioPlayer.volume = 1;
+            // Показываем кнопку запуска и скрываем плеер
+            startButton.classList.remove('hidden');
+            playerControls.classList.add('hidden');
+            
+            // Обработчик клика по кнопке запуска
+            startButton.addEventListener('click', function() {
+                // Скрываем кнопку и показываем плеер
+                startButton.classList.add('hidden');
+                playerControls.classList.remove('hidden');
+                
+                // Пытаемся запустить воспроизведение
+                const playPromise = audioPlayer.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(function() {
+                        // Автовоспроизведение запустилось
+                        status.textContent = 'Воспроизведение...';
+                        audioPlayer.volume = 1;
+                    }).catch(function(error) {
+                        // Автовоспроизведение заблокировано
+                        status.textContent = 'Нажмите на кнопку play для запуска';
+                        console.log('Автовоспроизведение заблокировано: ', error);
+                    });
+                }
+            });
+            
+            // Регулировка громкости
+            volumeSlider.addEventListener('input', function() {
+                audioPlayer.volume = volumeSlider.value;
+            });
             
             // Обновляем статус
             audioPlayer.addEventListener('play', function() {
@@ -84,18 +134,9 @@
             });
             
             audioPlayer.addEventListener('error', function() {
-                status.textContent = 'Ошибка загрузки аудио';
-            });
-            
-            // Регулировка громкости
-            volumeSlider.addEventListener('input', function() {
-                audioPlayer.volume = volumeSlider.value;
-            });
-            
-            // Попытка автоматического запуска
-            audioPlayer.play().catch(function(error) {
-                console.log('Автовоспроизведение заблокировано: ', error);
-                status.textContent = 'Нажмите на кнопку play для запуска';
+                status.textContent = 'Ошибка загрузки аудио. Проверьте ссылку.';
+                startButton.classList.remove('hidden');
+                playerControls.classList.add('hidden');
             });
         });
     </script>
