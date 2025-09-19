@@ -1,6 +1,23 @@
 {
-  "version": 2,
-  "routes": [
-    { "src": "/unewfm", "dest": "/api/proxy.js" }
+  "functions": {
+    "api/proxy.js": {
+      "maxDuration": 60,
+      "responseLimit": false
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET,OPTIONS"
+        }
+      ]
+    }
   ]
 }
