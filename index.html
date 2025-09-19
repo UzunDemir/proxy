@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radio Stream | Secure Player</title>
+    <title>Radio Player | Vercel Proxy</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             text-align: center;
-            background-color: #121212;
-            color: #ffffff;
             padding: 20px;
-            margin: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -19,112 +18,90 @@
             align-items: center;
         }
         .container {
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            max-width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
             width: 100%;
         }
         .btn {
-            background: #1DB954;
-            color: white;
+            background: #00ff88;
+            color: #121212;
             border: none;
-            padding: 15px 30px;
+            padding: 20px 40px;
             font-size: 18px;
-            border-radius: 25px;
+            font-weight: bold;
+            border-radius: 50px;
             cursor: pointer;
             margin: 20px 0;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
         }
         .btn:hover {
-            background: #1ed760;
+            background: #00cc6a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
         }
         .status {
-            margin: 15px 0;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 14px;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
         }
-        .loading { background: #ffbb33; color: black; }
-        .success { background: #00C851; }
-        .error { background: #ff4444; }
-        .hidden { display: none; }
+        audio {
+            width: 100%;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎵 Интернет-Радио</h1>
+        <h1>🎵 Radio Stream</h1>
         <p>Gianluca Dimeo & Daniel Santoro - Wings</p>
         
-        <button class="btn" onclick="startPlayback()">▶️ ЗАПУСТИТЬ РАДИО</button>
+        <button class="btn" onclick="startRadio()">▶️ START STREAM</button>
         
         <div id="status" class="status">
-            Нажмите кнопку для запуска проигрывателя
+            Ready to play through Vercel proxy
         </div>
         
-        <audio id="audioPlayer" controls class="hidden" style="width: 100%; margin: 15px 0;">
-            Ваш браузер не поддерживает аудио элемент
-        </audio>
+        <audio id="player" controls></audio>
     </div>
 
     <script>
-        // Используем CORS-прокси для обхода HTTP блокировки
-        const originalUrl = 'http://185.43.6.38/hc/preview/temp_067TG/2025.09/Gianluca%20Dimeo%20%26%20Daniel%20Santoro%20-%20Wings.mp3';
-        const corsProxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(originalUrl);
-        
-        function startPlayback() {
+        async function startRadio() {
             const status = document.getElementById('status');
-            const player = document.getElementById('audioPlayer');
-            const btn = document.querySelector('.btn');
+            const player = document.getElementById('player');
             
-            status.textContent = 'Подключаемся через безопасный прокси...';
-            status.className = 'status loading';
+            status.textContent = 'Connecting through Vercel proxy...';
             
-            // Прячем кнопку и показываем плеер
-            btn.classList.add('hidden');
-            player.classList.remove('hidden');
-            
-            // Устанавливаем источник через CORS-прокси
-            player.src = corsProxyUrl;
-            
-            // Пытаемся запустить воспроизведение
-            const playPromise = player.play();
-            
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    status.textContent = 'Воспроизведение началось!';
-                    status.className = 'status success';
-                }).catch(error => {
-                    status.textContent = 'Нажмите кнопку PLAY на плеере ↑';
-                    status.className = 'status loading';
-                    console.log('Автовоспроизведение заблокировано, но плеер готов:', error);
-                });
+            try {
+                // Получаем URL прокси с вашего Vercel deployment
+                // Замените YOUR_VERCEL_URL на ваш актуальный URL
+                const proxyUrl = '/api/audio'; // Локально или на том же домене
+                
+                player.src = proxyUrl;
+                
+                const playPromise = player.play();
+                
+                if (playPromise !== undefined) {
+                    await playPromise;
+                    status.textContent = 'Streaming live!';
+                    status.style.background = 'rgba(0, 255, 136, 0.3)';
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                status.textContent = 'Click PLAY button above ↑';
+                status.style.background = 'rgba(255, 165, 0, 0.3)';
             }
         }
         
-        // Обработчики событий плеера
-        document.getElementById('audioPlayer').addEventListener('play', () => {
-            document.getElementById('status').textContent = 'Воспроизведение...';
-            document.getElementById('status').className = 'status success';
-        });
-        
-        document.getElementById('audioPlayer').addEventListener('pause', () => {
-            document.getElementById('status').textContent = 'Пауза';
-            document.getElementById('status').className = 'status loading';
-        });
-        
-        document.getElementById('audioPlayer').addEventListener('error', (e) => {
-            console.error('Audio error:', e);
-            document.getElementById('status').textContent = 'Ошибка загрузки. Попробуйте обновить страницу.';
-            document.getElementById('status').className = 'status error';
-            document.querySelector('.btn').classList.remove('hidden');
-        });
-        
-        // Попробуем автоматически запустить если страница загружена по HTTPS
-        if (window.location.protocol === 'https:') {
-            console.log('Страница загружена по HTTPS, можно пытаться автозапуск');
-        }
+        // Автозапуск
+        window.addEventListener('load', startRadio);
     </script>
 </body>
 </html>
