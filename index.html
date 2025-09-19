@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radio Stream | Gianluca Dimeo & Daniel Santoro - Wings</title>
+    <title>Radio Stream | Secure Player</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #121212;
             color: #ffffff;
-            padding: 50px;
+            padding: 20px;
             margin: 0;
             min-height: 100vh;
             display: flex;
@@ -18,7 +18,7 @@
             justify-content: center;
             align-items: center;
         }
-        .player-container {
+        .container {
             background-color: #1e1e1e;
             padding: 30px;
             border-radius: 15px;
@@ -26,119 +26,105 @@
             max-width: 400px;
             width: 100%;
         }
-        h1 {
-            margin-top: 0;
-            color: #1DB954;
-        }
-        audio {
-            width: 100%;
-            margin: 20px 0;
-            outline: none;
-        }
-        .status {
-            margin-top: 20px;
-            font-style: italic;
-            color: #b3b3b3;
-        }
-        .volume-control {
-            width: 100%;
-            margin: 15px 0;
-        }
-        .start-button {
-            background-color: #1DB954;
+        .btn {
+            background: #1DB954;
             color: white;
             border: none;
             padding: 15px 30px;
             font-size: 18px;
-            border-radius: 30px;
+            border-radius: 25px;
             cursor: pointer;
             margin: 20px 0;
             transition: background-color 0.3s;
         }
-        .start-button:hover {
-            background-color: #1ed760;
+        .btn:hover {
+            background: #1ed760;
         }
-        .hidden {
-            display: none;
+        .status {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
         }
+        .loading { background: #ffbb33; color: black; }
+        .success { background: #00C851; }
+        .error { background: #ff4444; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <div class="player-container">
-        <h1>Интернет-радио</h1>
+    <div class="container">
+        <h1>🎵 Интернет-Радио</h1>
         <p>Gianluca Dimeo & Daniel Santoro - Wings</p>
         
-        <button id="startButton" class="start-button">▶️ Запустить радио</button>
+        <button class="btn" onclick="startPlayback()">▶️ ЗАПУСТИТЬ РАДИО</button>
         
-        <div id="playerControls" class="hidden">
-            <audio id="audioPlayer" controls>
-                <source src="http://185.43.6.38/hc/preview/temp_067TG/2025.09/Gianluca%20Dimeo%20%26%20Daniel%20Santoro%20-%20Wings.mp3" type="audio/mpeg">
-                Ваш браузер не поддерживает элемент audio.
-            </audio>
-
-            <div class="volume-control">
-                <label for="volumeSlider">Громкость:</label>
-                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
-            </div>
+        <div id="status" class="status">
+            Нажмите кнопку для запуска проигрывателя
         </div>
-
-        <div class="status" id="status">Нажмите кнопку выше чтобы начать прослушивание</div>
+        
+        <audio id="audioPlayer" controls class="hidden" style="width: 100%; margin: 15px 0;">
+            Ваш браузер не поддерживает аудио элемент
+        </audio>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const startButton = document.getElementById('startButton');
-            const playerControls = document.getElementById('playerControls');
-            const audioPlayer = document.getElementById('audioPlayer');
-            const volumeSlider = document.getElementById('volumeSlider');
+        // Используем CORS-прокси для обхода HTTP блокировки
+        const originalUrl = 'http://185.43.6.38/hc/preview/temp_067TG/2025.09/Gianluca%20Dimeo%20%26%20Daniel%20Santoro%20-%20Wings.mp3';
+        const corsProxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(originalUrl);
+        
+        function startPlayback() {
             const status = document.getElementById('status');
+            const player = document.getElementById('audioPlayer');
+            const btn = document.querySelector('.btn');
             
-            // Показываем кнопку запуска и скрываем плеер
-            startButton.classList.remove('hidden');
-            playerControls.classList.add('hidden');
+            status.textContent = 'Подключаемся через безопасный прокси...';
+            status.className = 'status loading';
             
-            // Обработчик клика по кнопке запуска
-            startButton.addEventListener('click', function() {
-                // Скрываем кнопку и показываем плеер
-                startButton.classList.add('hidden');
-                playerControls.classList.remove('hidden');
-                
-                // Пытаемся запустить воспроизведение
-                const playPromise = audioPlayer.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.then(function() {
-                        // Автовоспроизведение запустилось
-                        status.textContent = 'Воспроизведение...';
-                        audioPlayer.volume = 1;
-                    }).catch(function(error) {
-                        // Автовоспроизведение заблокировано
-                        status.textContent = 'Нажмите на кнопку play для запуска';
-                        console.log('Автовоспроизведение заблокировано: ', error);
-                    });
-                }
-            });
+            // Прячем кнопку и показываем плеер
+            btn.classList.add('hidden');
+            player.classList.remove('hidden');
             
-            // Регулировка громкости
-            volumeSlider.addEventListener('input', function() {
-                audioPlayer.volume = volumeSlider.value;
-            });
+            // Устанавливаем источник через CORS-прокси
+            player.src = corsProxyUrl;
             
-            // Обновляем статус
-            audioPlayer.addEventListener('play', function() {
-                status.textContent = 'Воспроизведение...';
-            });
+            // Пытаемся запустить воспроизведение
+            const playPromise = player.play();
             
-            audioPlayer.addEventListener('pause', function() {
-                status.textContent = 'Пауза';
-            });
-            
-            audioPlayer.addEventListener('error', function() {
-                status.textContent = 'Ошибка загрузки аудио. Проверьте ссылку.';
-                startButton.classList.remove('hidden');
-                playerControls.classList.add('hidden');
-            });
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    status.textContent = 'Воспроизведение началось!';
+                    status.className = 'status success';
+                }).catch(error => {
+                    status.textContent = 'Нажмите кнопку PLAY на плеере ↑';
+                    status.className = 'status loading';
+                    console.log('Автовоспроизведение заблокировано, но плеер готов:', error);
+                });
+            }
+        }
+        
+        // Обработчики событий плеера
+        document.getElementById('audioPlayer').addEventListener('play', () => {
+            document.getElementById('status').textContent = 'Воспроизведение...';
+            document.getElementById('status').className = 'status success';
         });
+        
+        document.getElementById('audioPlayer').addEventListener('pause', () => {
+            document.getElementById('status').textContent = 'Пауза';
+            document.getElementById('status').className = 'status loading';
+        });
+        
+        document.getElementById('audioPlayer').addEventListener('error', (e) => {
+            console.error('Audio error:', e);
+            document.getElementById('status').textContent = 'Ошибка загрузки. Попробуйте обновить страницу.';
+            document.getElementById('status').className = 'status error';
+            document.querySelector('.btn').classList.remove('hidden');
+        });
+        
+        // Попробуем автоматически запустить если страница загружена по HTTPS
+        if (window.location.protocol === 'https:') {
+            console.log('Страница загружена по HTTPS, можно пытаться автозапуск');
+        }
     </script>
 </body>
 </html>
