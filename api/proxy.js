@@ -1,81 +1,28 @@
-export default async function handler(req, res) {
-  // Устанавливаем CORS заголовки
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+module.exports = (req, res) => {
+  // Устанавливаем CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Max-Age', '86400'); // 24 часа
-
-  // Обрабатываем предварительный запрос OPTIONS
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
-
-  // Получаем URL трека из query-параметра
-  const trackUrl = req.query.url;
-
-  if (!trackUrl) {
-    return res.status(400).json({ error: 'URL параметр обязателен' });
-  }
-
-  try {
-    // Декодируем URL
-    const decodedUrl = decodeURIComponent(trackUrl);
-    
-    // Проверяем валидность URL
-    if (!isValidUrl(decodedUrl)) {
-      return res.status(400).json({ error: 'Неверный URL' });
+  
+  // Проксируем на целевой аудио-сервер
+  createProxyMiddleware({
+    target: 'http://185.43.6.38',
+    changeOrigin: true,
+    onProxyRes: (proxyRes) => {
+      // Устанавливаем правильные headers для аудио потока
+      proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+      proxyRes.headers['Cache-Control'] = 'no-cache';
+      proxyRes.headers['Content-Type'] = 'audio/mpeg';
+    },
+    pathRewrite: {
+      '^/api/proxy': '/hc/preview/temp_067TG/2025.09/Gianluca%20Dimeo%20%26%20Daniel%20Santoro%20-%20Wings.mp3'
     }
-
-    // Загружаем трек с исходного сервера
-    const audioResponse = await fetch(decodedUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      },
-      timeout: 10000 // 10 секунд таймаут
-    });
-
-    if (!audioResponse.ok) {
-      throw new Error(`Ошибка загрузки: ${audioResponse.status} ${audioResponse.statusText}`);
-    }
-
-    // Устанавливаем правильные заголовки
-    res.setHeader('Content-Type', audioResponse.headers.get('content-type') || 'audio/mpeg');
-    res.setHeader('Cache-Control', 'public, max-age=3600'); // Кешируем на 1 час
-    
-    // Пересылаем данные потоком
-    const reader = audioResponse.body.getReader();
-    
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      res.write(value);
-    }
-    
-    res.end();
-
-  } catch (error) {
-    console.error('Ошибка прокси:', error);
-    res.status(500).json({ 
-      error: 'Не удалось загрузить трек',
-      details: error.message 
-    });
-  }
-}
-
-// Вспомогательная функция для проверки URL
-function isValidUrl(string) {
-  try {
-    new URL(string);
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
-
-// Конфигурация для Vercel
-export const config = {
-  api: {
-    bodyParser: false,
-    responseLimit: false,
-    externalResolver: true,
-  },
+  })(req, res);
 };
