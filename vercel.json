@@ -1,6 +1,6 @@
 {
   "version": 2,
   "routes": [
-    { "src": "/unefm", "dest": "/api/proxy.js" }
+    { "src": "/unewfm", "dest": "/api/proxy.js" }
   ]
 }
